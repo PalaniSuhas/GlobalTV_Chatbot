@@ -1,4 +1,4 @@
-"""Main Chainlit application - CORRECT FLOW WITH 2 ATTEMPTS"""
+"""Main Chainlit application - WITH TEXT-BASED TICKET DETECTION"""
 import chainlit as cl
 from dotenv import load_dotenv
 import os
@@ -16,12 +16,46 @@ ticket_manager = TicketManager()
 knowledge_manager = SmartKnowledgeManager()
 
 
+def detect_negative_response(message: str) -> bool:
+    """Detect if user response indicates issue not resolved"""
+    negative_keywords = [
+        'no', 'nope', 'not working', 'still not working', 'still exists',
+        'still have issue', 'still broken', 'didn\'t work', 'didnt work',
+        'not fixed', 'still problem', 'same issue', 'same error',
+        'still happening', 'persists', 'still there'
+    ]
+    message_lower = message.lower().strip()
+    
+    # Check for standalone "no" or "nope"
+    if message_lower in ['no', 'nope', 'n']:
+        return True
+    
+    # Check for negative keywords
+    return any(keyword in message_lower for keyword in negative_keywords)
+
+
+def detect_positive_response(message: str) -> bool:
+    """Detect if user response indicates issue resolved"""
+    positive_keywords = [
+        'yes', 'yep', 'yeah', 'fixed', 'working', 'resolved', 'solved',
+        'helped', 'works now', 'all good', 'thank', 'thanks', 'perfect'
+    ]
+    message_lower = message.lower().strip()
+    
+    # Check for standalone "yes"
+    if message_lower in ['yes', 'yep', 'yeah', 'y']:
+        return True
+    
+    return any(keyword in message_lower for keyword in positive_keywords)
+
+
 @cl.on_chat_start
 async def start():
     """Initialize chat session"""
     conversation_handler = ConversationHandler()
     cl.user_session.set("conversation_handler", conversation_handler)
-    cl.user_session.set("attempt_count", 0)  # Track resolution attempts
+    cl.user_session.set("attempt_count", 0)
+    cl.user_session.set("waiting_for_resolution", False)  # Track if we asked "Did this help?"
     
     welcome = conversation_handler.get_welcome_message()
     
@@ -35,7 +69,6 @@ async def start():
 
 @cl.action_callback("subscription")
 async def handle_subscription(action):
-    """Handle subscription category selection"""
     handler = cl.user_session.get("conversation_handler")
     response = handler.handle_category_selection("subscription")
     await cl.Message(content=response["message"]).send()
@@ -43,7 +76,6 @@ async def handle_subscription(action):
 
 @cl.action_callback("technical")
 async def handle_technical(action):
-    """Handle technical support category - 2 BUCKETS ONLY"""
     handler = cl.user_session.get("conversation_handler")
     handler.context['category'] = 'technical'
     
@@ -63,7 +95,6 @@ async def handle_technical(action):
 
 @cl.action_callback("billing")
 async def handle_billing(action):
-    """Handle billing category"""
     handler = cl.user_session.get("conversation_handler")
     response = handler.handle_category_selection("billing")
     await cl.Message(content=response["message"]).send()
@@ -71,7 +102,6 @@ async def handle_billing(action):
 
 @cl.action_callback("content")
 async def handle_content(action):
-    """Handle content/programming category"""
     handler = cl.user_session.get("conversation_handler")
     response = handler.handle_category_selection("content")
     await cl.Message(content=response["message"]).send()
@@ -79,7 +109,6 @@ async def handle_content(action):
 
 @cl.action_callback("general")
 async def handle_general(action):
-    """Handle general questions category"""
     handler = cl.user_session.get("conversation_handler")
     response = handler.handle_category_selection("general")
     await cl.Message(content=response["message"]).send()
@@ -87,7 +116,7 @@ async def handle_general(action):
 
 @cl.action_callback("general_tech")
 async def handle_general_tech(action):
-    """Handle General Tech/Video Issues - Bucket 1 - FIRST ATTEMPT"""
+    """Handle General Tech - FIRST ATTEMPT"""
     handler = cl.user_session.get("conversation_handler")
     handler.context['tech_issue_type'] = 'general_tech'
     cl.user_session.set("attempt_count", 1)
@@ -117,7 +146,9 @@ Try these steps and let me know if it helps!"""
     
     await cl.Message(content=solution).send()
     
-    # Ask if resolved - ATTEMPT 1
+    # Set flag that we're waiting for resolution response
+    cl.user_session.set("waiting_for_resolution", True)
+    
     actions = [
         cl.Action(name="resolved_attempt1", value="resolved", 
                  label="✅ Fixed!", 
@@ -132,7 +163,7 @@ Try these steps and let me know if it helps!"""
 
 @cl.action_callback("ad_freezing")
 async def handle_ad_freezing(action):
-    """Handle Ad Freezing Issues - Bucket 2 - FIRST ATTEMPT"""
+    """Handle Ad Freezing - FIRST ATTEMPT"""
     handler = cl.user_session.get("conversation_handler")
     handler.context['tech_issue_type'] = 'ad_freezing'
     cl.user_session.set("attempt_count", 1)
@@ -161,7 +192,8 @@ Try these and let me know!"""
     
     await cl.Message(content=solution).send()
     
-    # Ask if resolved - ATTEMPT 1
+    cl.user_session.set("waiting_for_resolution", True)
+    
     actions = [
         cl.Action(name="resolved_attempt1", value="resolved", 
                  label="✅ Fixed!", 
@@ -177,6 +209,8 @@ Try these and let me know!"""
 @cl.action_callback("resolved_attempt1")
 async def handle_resolved_attempt1(action):
     """Handle resolution after first attempt"""
+    cl.user_session.set("waiting_for_resolution", False)
+    
     feedback_msg = "Great! Glad that worked. Quick feedback?"
     
     actions = [
@@ -199,13 +233,12 @@ async def handle_not_resolved_attempt1(action):
     cl.user_session.set("attempt_count", 2)
     
     if tech_issue_type == 'general_tech':
-        # ALTERNATE SOLUTION for General Tech
         solution = """Let's try a different approach:
 
 **Advanced Troubleshooting:**
 
 1. **Test on Different Device**
-   - Try watching on another device (phone, tablet, computer)
+   - Try watching on another device
    - This helps identify if it's device-specific
 
 2. **Check Browser (if on computer)**
@@ -214,45 +247,41 @@ async def handle_not_resolved_attempt1(action):
    - Clear browser cache/cookies
 
 3. **Verify Subscription**
-   - Go to https://watch.globaltv.com/ on computer
+   - Go to https://watch.globaltv.com/
    - Sign in with your TV provider credentials
    - Check if you can play Live TV
-   - Verify which channels you have access to
 
 4. **Contact Your Provider**
    - Sometimes the issue is with your TV provider's authentication
-   - Contact them to verify your Global TV subscription is active
+   - Verify your Global TV subscription is active
 
-Try these steps and let me know!"""
+Try these steps!"""
     else:
-        # ALTERNATE SOLUTION for Ad Freezing
         solution = """Let's try these additional steps:
 
 **Advanced Ad Freezing Fix:**
 
 1. **Identify Specific Ad**
-   - Note which specific commercial causes the freeze
-   - Try different shows to see if same ad appears
+   - Note which commercial causes the freeze
 
 2. **Device-Specific Reset**
    - For Smart TVs: Unplug TV for 60 seconds
-   - For streaming devices: Factory reset the device
+   - For streaming devices: Factory reset
    - Reinstall Global TV app
 
 3. **Network Optimization**
-   - Connect device directly via Ethernet (if possible)
+   - Connect directly via Ethernet
    - Reduce other devices using WiFi
-   - Contact your internet provider if speeds are slow
 
 4. **Alternative Viewing**
-   - Try watching via https://watch.globaltv.com/ on computer
-   - This helps identify if it's app-specific
+   - Try https://watch.globaltv.com/ on computer
 
-Try these and let me know the result!"""
+Try these!"""
     
     await cl.Message(content=solution).send()
     
-    # Ask if resolved - ATTEMPT 2
+    cl.user_session.set("waiting_for_resolution", True)
+    
     actions = [
         cl.Action(name="resolved_attempt2", value="resolved", 
                  label="✅ This Fixed It!", 
@@ -268,6 +297,8 @@ Try these and let me know the result!"""
 @cl.action_callback("resolved_attempt2")
 async def handle_resolved_attempt2(action):
     """Handle resolution after second attempt"""
+    cl.user_session.set("waiting_for_resolution", False)
+    
     feedback_msg = "Excellent! So glad we got it working. Quick feedback?"
     
     actions = [
@@ -285,9 +316,9 @@ async def handle_resolved_attempt2(action):
 @cl.action_callback("not_resolved_attempt2")
 async def handle_not_resolved_attempt2(action):
     """Handle when both attempts failed - AUTO-CREATE TICKET"""
+    cl.user_session.set("waiting_for_resolution", False)
     handler = cl.user_session.get("conversation_handler")
     
-    # AUTO-CREATE TICKET (user shouldn't need to ask)
     await auto_create_ticket(handler, "Technical issue unresolved after 2 attempts")
 
 
@@ -298,7 +329,7 @@ async def auto_create_ticket(handler, issue_summary):
     category = handler.context.get('category', 'Technical')
     tech_issue_type = handler.context.get('tech_issue_type', 'general')
     
-    # Extract device, show, error details from conversation
+    # Extract device, show, error details
     device_info = None
     show_details = None
     error_details = None
@@ -307,19 +338,16 @@ async def auto_create_ticket(handler, issue_summary):
         content = msg['content']
         content_lower = content.lower()
         
-        # Look for device info
         if any(keyword in content_lower for keyword in 
                ['iphone', 'android', 'samsung', 'tv', 'device', 'ios', 'tizen', 'fire stick', 'roku']):
             if not device_info or len(content) > len(device_info or ''):
                 device_info = content[:500]
         
-        # Look for show/episode info
-        if any(keyword in content_lower for keyword in ['season', 'episode', 'show', 's0', 's1', 's2']):
+        if any(keyword in content_lower for keyword in ['season', 'episode', 'show', 'morning show']):
             if not show_details:
                 show_details = content[:500]
         
-        # Look for error messages
-        if 'error' in content_lower or 'message' in content_lower:
+        if 'error' in content_lower or '503' in content or 'playback' in content_lower:
             if not error_details:
                 error_details = content[:500]
     
@@ -335,7 +363,6 @@ async def auto_create_ticket(handler, issue_summary):
         priority="High"
     )
     
-    # Show ticket confirmation
     ticket_msg = f"""I've tried two solutions but the issue persists. I've automatically created a support ticket for you.
 
 **🎫 Support Ticket Created**
@@ -353,13 +380,10 @@ async def auto_create_ticket(handler, issue_summary):
 📞 Phone: 1-800-GLOBAL-TV (1-800-456-2258)
 📧 Email: webmaster@globaltv.com
 
-**Important:** Please reference ticket **{ticket_id}** when contacting support.
-
-A support specialist will reach out to you soon!"""
+**Important:** Reference ticket **{ticket_id}** when contacting support."""
     
     await cl.Message(content=ticket_msg).send()
     
-    # Final feedback
     actions = [
         cl.Action(name="positive", value="positive", 
                  label="👍 Thanks for trying to help", 
@@ -374,7 +398,6 @@ A support specialist will reach out to you soon!"""
 
 @cl.action_callback("view_subscription")
 async def handle_view_subscription(action):
-    """Display subscription details"""
     handler = cl.user_session.get("conversation_handler")
     subscriber_info = handler.context.get('subscriber_info')
     
@@ -395,7 +418,6 @@ async def handle_view_subscription(action):
 
 @cl.action_callback("channel_access")
 async def handle_channel_access(action):
-    """Handle channel access"""
     handler = cl.user_session.get("conversation_handler")
     subscriber_info = handler.context.get('subscriber_info')
     
@@ -407,7 +429,6 @@ async def handle_channel_access(action):
         response = f"""**Your Channel Access**
 
 **{subscription_type}** with **{provider}**
-
 **Your Channels:** {channels}
 
 **Quick Fix:**
@@ -430,7 +451,6 @@ async def handle_channel_access(action):
 
 @cl.action_callback("renewal")
 async def handle_renewal(action):
-    """Handle renewal questions"""
     handler = cl.user_session.get("conversation_handler")
     subscriber_info = handler.context.get('subscriber_info')
     
@@ -444,8 +464,7 @@ async def handle_renewal(action):
             response = f"""**Renewal Info**
 
 Expires: **{end_date}** ({days_remaining} days)
-Contact **{provider}** to renew
-Should auto-renew if you have automatic billing"""
+Contact **{provider}** to renew"""
         else:
             response = f"""**Subscription Expired**
 
@@ -467,7 +486,6 @@ Contact **{provider}** to reactivate"""
 
 @cl.action_callback("positive")
 async def handle_positive_feedback(action):
-    """Handle positive feedback"""
     end_msg = "Thank you for your feedback! Have a great day! 🎉"
     actions = [
         cl.Action(name="restart", value="restart", label="🔄 New Conversation", 
@@ -478,20 +496,17 @@ async def handle_positive_feedback(action):
 
 @cl.action_callback("negative")
 async def handle_negative_feedback(action):
-    """Handle negative feedback"""
     handler = cl.user_session.get("conversation_handler")
-    
-    # Create ticket for negative feedback
     await auto_create_ticket(handler, "Customer feedback: Experience could be improved")
 
 
 @cl.action_callback("restart")
 @cl.action_callback("main_menu")
 async def handle_restart(action):
-    """Restart conversation"""
     handler = cl.user_session.get("conversation_handler")
     handler.reset()
     cl.user_session.set("attempt_count", 0)
+    cl.user_session.set("waiting_for_resolution", False)
     
     welcome = handler.get_welcome_message()
     actions = [
@@ -504,20 +519,49 @@ async def handle_restart(action):
 
 @cl.action_callback("more_help")
 async def handle_more_help(action):
-    """Handle more help request"""
     await cl.Message(content="What else can I help with?").send()
 
 
 @cl.on_message
 async def main(message: cl.Message):
-    """Handle user messages"""
+    """Handle user messages - WITH TEXT DETECTION"""
     handler = cl.user_session.get("conversation_handler")
     current_state = handler.state
     user_message = message.content
+    attempt_count = cl.user_session.get("attempt_count", 0)
+    waiting_for_resolution = cl.user_session.get("waiting_for_resolution", False)
     
     # Add to history
     handler.add_to_history("user", user_message)
     
+    # CRITICAL: Detect text-based negative responses when waiting for resolution
+    if waiting_for_resolution and detect_negative_response(user_message):
+        cl.user_session.set("waiting_for_resolution", False)
+        
+        if attempt_count == 1:
+            # First attempt failed, try second solution
+            await handle_not_resolved_attempt1(None)
+            return
+        elif attempt_count == 2:
+            # Second attempt failed, create ticket
+            await handle_not_resolved_attempt2(None)
+            return
+    
+    # Detect text-based positive responses
+    if waiting_for_resolution and detect_positive_response(user_message):
+        cl.user_session.set("waiting_for_resolution", False)
+        
+        feedback_msg = "Great! Glad that worked. Quick feedback?"
+        actions = [
+            cl.Action(name="positive", value="positive", label="👍 Helpful!", 
+                     payload={"action": "positive"}),
+            cl.Action(name="restart", value="restart", label="🏠 Main Menu", 
+                     payload={"action": "restart"})
+        ]
+        await cl.Message(content=feedback_msg, actions=actions).send()
+        return
+    
+    # Normal message handling
     if current_state == ConversationState.SUBSCRIPTION_NAME:
         response = handler.handle_subscription_name(user_message)
         await cl.Message(content=response["message"]).send()
@@ -539,23 +583,28 @@ async def main(message: cl.Message):
         await cl.Message(content=verification_response["message"], actions=actions).send()
         
     elif current_state in [ConversationState.SUBSCRIPTION_VERIFIED, ConversationState.GENERAL_QUERY]:
-        # Use smart knowledge base with context
         answer = knowledge_manager.get_answer(user_message, 
                                               conversation_history=handler.conversation_history)
         handler.add_to_history("assistant", answer)
         await cl.Message(content=answer).send()
         
-        # Ask if resolved
-        actions = [
-            cl.Action(name="resolved", value="resolved", label="✅ That Helped!", 
-                     payload={"action": "resolved"}),
-            cl.Action(name="not_resolved", value="not_resolved", label="❌ Need More Help", 
-                     payload={"action": "not_resolved"})
-        ]
-        await cl.Message(content="Did that answer your question?", actions=actions).send()
+        # Only ask "Did that help?" if the answer is substantive (not asking for more info)
+        answer_lower = answer.lower()
+        is_asking_for_info = any(phrase in answer_lower for phrase in [
+            'could you please', 'can you provide', 'please provide', 'what is',
+            'which', 'please tell me', 'let me know', 'can you tell'
+        ])
+        
+        if not is_asking_for_info:
+            actions = [
+                cl.Action(name="resolved", value="resolved", label="✅ That Helped!", 
+                         payload={"action": "resolved"}),
+                cl.Action(name="not_resolved", value="not_resolved", label="❌ Need More Help", 
+                         payload={"action": "not_resolved"})
+            ]
+            await cl.Message(content="Did that answer your question?", actions=actions).send()
     
     else:
-        # Default: use knowledge base
         answer = knowledge_manager.get_answer(user_message, 
                                               conversation_history=handler.conversation_history)
         handler.add_to_history("assistant", answer)
@@ -564,7 +613,6 @@ async def main(message: cl.Message):
 
 @cl.action_callback("resolved")
 async def handle_resolved(action):
-    """Handle general resolved action"""
     feedback_msg = "Great! Quick feedback?"
     actions = [
         cl.Action(name="positive", value="positive", label="👍 Helpful!", 
@@ -579,6 +627,5 @@ async def handle_resolved(action):
 
 @cl.action_callback("not_resolved")
 async def handle_not_resolved(action):
-    """Handle general not resolved - create ticket"""
     handler = cl.user_session.get("conversation_handler")
     await auto_create_ticket(handler, "Customer issue not resolved")
