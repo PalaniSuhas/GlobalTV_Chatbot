@@ -3,15 +3,17 @@ import chainlit as cl
 from dotenv import load_dotenv
 import os
 from src.subscription_manager import SubscriptionManager
-from src.knowledge_manager import KnowledgeManager
 from src.conversation_handler import ConversationHandler, ConversationState
+from src.ticket_manager import TicketManager
+from src.knowledge_manager import SmartKnowledgeManager
 
 # Load environment variables
 load_dotenv()
 
 # Initialize managers
 subscription_manager = SubscriptionManager()
-knowledge_manager = KnowledgeManager()
+ticket_manager = TicketManager()
+knowledge_manager = SmartKnowledgeManager()
 
 @cl.on_chat_start
 async def start():
@@ -69,7 +71,7 @@ async def handle_content(action):
     response = handler.handle_category_selection("content")
     
     actions = [
-        cl.Action(name=btn["value"], value=btn["value"], label=btn["label"])
+        cl.Action(name=btn["value"], value=btn["value"], label=btn["label"], payload={"action": btn["value"]})
         for btn in response["buttons"]
     ]
     
@@ -158,8 +160,8 @@ The Global TV App Team
     
     # Ask if issue is resolved
     actions = [
-        cl.Action(name="resolved", value="resolved", label="✅ Issue Resolved"),
-        cl.Action(name="need_more_help", value="escalate", label="❌ Still Need Help")
+        cl.Action(name="resolved", value="resolved", label="✅ Issue Resolved", payload={"action": "resolved"}),
+        cl.Action(name="need_more_help", value="escalate", label="❌ Still Need Help", payload={"action": "escalate"})
     ]
     
     await cl.Message(
@@ -219,8 +221,8 @@ Would you like help with anything else?
         await cl.Message(content=response).send()
         
         actions = [
-            cl.Action(name="resolved", value="resolved", label="✅ That Helped!"),
-            cl.Action(name="need_more_help", value="escalate", label="❌ Still Having Issues")
+            cl.Action(name="resolved", value="resolved", label="✅ That Helped!", payload={"action": "resolved"}),
+            cl.Action(name="need_more_help", value="escalate", label="❌ Still Having Issues", payload={"action": "escalate"})
         ]
         
         await cl.Message(
@@ -274,8 +276,8 @@ Your subscription ended on **{end_date}**.
         await cl.Message(content=response).send()
         
         actions = [
-            cl.Action(name="resolved", value="resolved", label="✅ That Helped!"),
-            cl.Action(name="need_more_help", value="escalate", label="❓ More Questions")
+            cl.Action(name="resolved", value="resolved", label="✅ That Helped!", payload={"action": "resolved"}),
+            cl.Action(name="need_more_help", value="escalate", label="❓ More Questions", payload={"action": "escalate"})
         ]
         
         await cl.Message(
@@ -308,37 +310,6 @@ async def handle_resolved(action):
     
     await cl.Message(content=feedback["message"], actions=actions).send()
 
-@cl.action_callback("need_more_help")
-@cl.action_callback("escalate")
-async def handle_escalation(action):
-    """Handle escalation to human agent"""
-    handler = cl.user_session.get("conversation_handler")
-    
-    escalation_msg = """
-I understand you need additional assistance. Let me connect you with our support team.
-
-**Please provide the following information:**
-- Device details (make, model, OS version)
-- Specific show/episode having issues (if applicable)
-- Error messages or screenshots (if any)
-
-A support agent will contact you within 1-3 business days.
-
-**Urgent issues?** Call: 1-800-GLOBAL-TV (1-800-456-2258)
-**Email:** webmaster@globaltv.com
-"""
-    
-    await cl.Message(content=escalation_msg).send()
-    
-    # Get feedback
-    feedback = handler.get_feedback_message()
-    actions = [
-        cl.Action(name=btn["value"], value=btn["value"], label=btn["label"], payload={"action": btn["value"]})
-        for btn in feedback["buttons"]
-    ]
-    
-    await cl.Message(content="Before you go, may I ask:", actions=actions).send()
-
 @cl.action_callback("positive")
 async def handle_positive_feedback(action):
     """Handle positive feedback"""
@@ -354,16 +325,134 @@ async def handle_positive_feedback(action):
 
 @cl.action_callback("negative")
 async def handle_negative_feedback(action):
-    """Handle negative feedback"""
+    """Handle negative feedback and create ticket"""
     handler = cl.user_session.get("conversation_handler")
-    end_msg = handler.get_end_message("negative")
+    
+    # Extract information for ticket
+    subscriber_info = handler.context.get('subscriber_info')
+    conversation_history = handler.conversation_history
+    category = handler.context.get('category', 'General')
+    
+    # Extract details from conversation
+    device_info = None
+    show_details = None
+    error_details = None
+    
+    for msg in conversation_history:
+        content = msg['content'].lower()
+        if any(device in content for device in ['iphone', 'android', 'samsung', 'device', 'tv', 'computer']):
+            device_info = msg['content']
+        if 'season' in content or 'episode' in content or 'show' in content:
+            show_details = msg['content']
+        if 'error' in content:
+            error_details = msg['content']
+    
+    # Create summary
+    last_user_msg = [m for m in conversation_history if m['role'] == 'user']
+    issue_summary = last_user_msg[-1]['content'] if last_user_msg else "Customer feedback: Could be better"
+    
+    # Create ticket
+    ticket_id = ticket_manager.create_ticket(
+        category=category.capitalize(),
+        issue_summary=issue_summary[:200],
+        conversation_history=conversation_history,
+        subscriber_info=subscriber_info,
+        device_info=device_info,
+        show_details=show_details,
+        error_details=error_details,
+        priority="Medium"
+    )
+    
+    end_msg = f"""Thank you for your feedback. I'm sorry I couldn't fully meet your expectations.
+
+**Support Ticket Created:**
+**Ticket ID:** {ticket_id}
+**Status:** Open
+**Priority:** Medium
+
+**What happens next:**
+1. A support agent will review your conversation
+2. They'll contact you within 1-3 business days
+3. You can reference ticket **{ticket_id}** in any follow-up
+
+**Need immediate help?**
+- **Phone:** 1-800-GLOBAL-TV (1-800-456-2258)
+- **Email:** webmaster@globaltv.com
+
+Your feedback helps us improve. Thank you!"""
     
     actions = [
-        cl.Action(name=btn["value"], value=btn["value"], label=btn["label"], payload={"action": btn["value"]})
-        for btn in end_msg["buttons"]
+        cl.Action(name="restart", value="restart", label="🔄 Start New Conversation", 
+                 payload={"action": "restart"})
     ]
     
-    await cl.Message(content=end_msg["message"], actions=actions).send()
+    await cl.Message(content=end_msg, actions=actions).send()
+
+
+@cl.action_callback("need_more_help")
+@cl.action_callback("escalate")
+@cl.action_callback("not_resolved")
+async def handle_escalation(action):
+    """Handle escalation to human agent with ticket creation"""
+    handler = cl.user_session.get("conversation_handler")
+    subscriber_info = handler.context.get('subscriber_info')
+    
+    # Extract device/show/error info
+    device_info = None
+    show_details = None
+    error_details = None
+    
+    for msg in handler.conversation_history:
+        content = msg['content'].lower()
+        if any(device in content for device in ['iphone', 'android', 'samsung', 'device', 'tv']):
+            device_info = msg['content'][:500]  # Limit length
+        if 'season' in content or 'episode' in content:
+            show_details = msg['content'][:500]
+        if 'error' in content:
+            error_details = msg['content'][:500]
+    
+    # Create ticket
+    ticket_id = ticket_manager.create_ticket(
+        category=handler.context.get('category', 'General').capitalize(),
+        issue_summary="Customer requested human agent assistance",
+        conversation_history=handler.conversation_history,
+        subscriber_info=subscriber_info,
+        device_info=device_info,
+        show_details=show_details,
+        error_details=error_details,
+        priority="High"
+    )
+    
+    escalation_msg = f"""I understand you need additional support. Let me connect you with our team.
+
+**Support Ticket Created:**
+**Ticket ID:** {ticket_id}
+**Status:** Open - Escalated to Support Team  
+**Priority:** High
+
+**What you can expect:**
+✓ Full conversation review by support agent
+✓ Response within 1-3 business days
+✓ Direct follow-up via email or phone
+
+**Urgent issues? Contact us now:**
+📞 **Phone:** 1-800-GLOBAL-TV (1-800-456-2258)
+📧 **Email:** webmaster@globaltv.com
+
+When contacting, mention ticket **{ticket_id}** for faster service."""
+    
+    await cl.Message(content=escalation_msg).send()
+    
+    # Ask for final feedback
+    actions = [
+        cl.Action(name="positive", value="positive", label="👍 Thanks for the help", 
+                 payload={"action": "positive"}),
+        cl.Action(name="restart", value="restart", label="🔄 New Issue", 
+                 payload={"action": "restart"})
+    ]
+    
+    await cl.Message(content="Would you like to provide any feedback before you go?", actions=actions).send()
+
 
 @cl.action_callback("restart")
 @cl.action_callback("main_menu")
@@ -387,7 +476,7 @@ async def handle_more_help(action):
 
 @cl.on_message
 async def main(message: cl.Message):
-    """Handle user messages"""
+    """Handle user messages with context awareness"""
     handler = cl.user_session.get("conversation_handler")
     current_state = handler.state
     user_message = message.content
@@ -396,16 +485,13 @@ async def main(message: cl.Message):
     handler.add_to_history("user", user_message)
     
     if current_state == ConversationState.SUBSCRIPTION_NAME:
-        # Handle name input
         response = handler.handle_subscription_name(user_message)
         await cl.Message(content=response["message"]).send()
         
     elif current_state == ConversationState.SUBSCRIPTION_MOBILE:
-        # Handle mobile input and verify
         response = handler.handle_subscription_mobile(user_message)
         await cl.Message(content=response["message"]).send()
         
-        # Verify subscriber
         name = handler.context.get('name')
         mobile = handler.context.get('mobile')
         subscriber_info = subscription_manager.verify_subscriber(name, mobile)
@@ -413,18 +499,21 @@ async def main(message: cl.Message):
         verification_response = handler.handle_subscription_verified(subscriber_info)
         
         actions = [
-            cl.Action(name=btn["value"], value=btn["value"], label=btn["label"], payload={"action": btn["value"]})
+            cl.Action(name=btn["value"], value=btn["value"], label=btn["label"], 
+                     payload={"action": btn["value"]})
             for btn in verification_response["buttons"]
         ]
         
         await cl.Message(content=verification_response["message"], actions=actions).send()
         
-    elif current_state == ConversationState.SUBSCRIPTION_VERIFIED or current_state == ConversationState.GENERAL_QUERY:
-        # Check if this is a subscription-related query that we can answer directly
+    elif current_state == ConversationState.SUBSCRIPTION_VERIFIED or \
+         current_state == ConversationState.GENERAL_QUERY or \
+         current_state == ConversationState.TECHNICAL_SUPPORT:
+        
         subscriber_info = handler.context.get('subscriber_info')
         user_message_lower = user_message.lower()
         
-        # Subscription-specific queries
+        # Check for subscription-specific queries
         if subscriber_info and any(keyword in user_message_lower for keyword in [
             'channel', 'subscription', 'access', 'package', 'provider', 
             'what do i have', 'my subscription', 'my channels'
@@ -444,35 +533,29 @@ These are the Global TV channels included in your current subscription package."
             handler.add_to_history("assistant", answer)
             await cl.Message(content=answer).send()
         else:
-            # Use knowledge base for other queries
-            answer = knowledge_manager.get_answer(user_message)
+            # Use SMART knowledge base with conversation history
+            answer = knowledge_manager.get_answer(
+                user_message, 
+                conversation_history=handler.conversation_history
+            )
             handler.add_to_history("assistant", answer)
             await cl.Message(content=answer).send()
         
         # Ask if issue is resolved
         actions = [
-            cl.Action(name="resolved", value="resolved", label="✅ That Helped!", payload={"action": "resolved"}),
-            cl.Action(name="need_more_help", value="escalate", label="❌ Need More Help", payload={"action": "escalate"})
+            cl.Action(name="resolved", value="resolved", label="✅ That Helped!", 
+                     payload={"action": "resolved"}),
+            cl.Action(name="need_more_help", value="escalate", label="❌ Need More Help", 
+                     payload={"action": "escalate"})
         ]
         
         await cl.Message(content="Did that answer your question?", actions=actions).send()
-        
-    elif current_state == ConversationState.TECHNICAL_SUPPORT:
-        # Handle technical support query
-        answer = knowledge_manager.get_answer(user_message)
-        handler.add_to_history("assistant", answer)
-        
-        await cl.Message(content=answer).send()
-        
-        # Ask if issue is resolved
-        actions = [
-            cl.Action(name="resolved", value="resolved", label="✅ Issue Resolved", payload={"action": "resolved"}),
-            cl.Action(name="need_more_help", value="escalate", label="❌ Still Having Issues", payload={"action": "escalate"})
-        ]
-        
-        await cl.Message(content="Did this resolve your technical issue?", actions=actions).send()
-        
+    
     else:
-        # Default: use knowledge base
-        answer = knowledge_manager.get_answer(user_message)
+        # Default: use smart knowledge base
+        answer = knowledge_manager.get_answer(
+            user_message, 
+            conversation_history=handler.conversation_history
+        )
+        handler.add_to_history("assistant", answer)
         await cl.Message(content=answer).send()

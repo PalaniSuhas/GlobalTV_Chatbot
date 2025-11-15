@@ -1,0 +1,15 @@
+ticket_id,created_at,status,category,priority,customer_name,customer_mobile,customer_email,provider,subscription_type,issue_summary,conversation_history,device_info,show_details,error_details,resolution_notes,resolved_at,assigned_to
+GT-20251115-W4XO62,2025-11-15 07:59:52,Open,General,High,Unknown,Unknown,Unknown,Unknown,Unknown,Customer requested escalation to human agent,"USER: how do I access outside canada
+ASSISTANT: I apologize, but I encountered an error. 
+
+**Please contact our support team:**
+- **Phone**: 1-800-GLOBAL-TV (1-800-456-2258)
+- **Email**: webmaster@globaltv.com
+USER: Why isn’t my TV provider listed?
+ASSISTANT: I apologize, but I encountered an error. 
+
+**Please contact our support team:**
+- **Phone**: 1-800-GLOBAL-TV (1-800-456-2258)
+- **Email**: webmaster@globaltv.com",Not provided,Not provided,Not provided,,,Unassigned
+GT-20251115-1DIPNE,2025-11-15 08:17:50,Open,Subscription,High,Donald Walker,981.960.0133,hoffmanjennifer@example.net,Bell,Basic Cable,Customer requested human agent assistance,"USER: Donald Walker
+USER: 9819600133",Not provided,Not provided,Not provided,,,Unassigned
