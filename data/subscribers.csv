@@ -1,0 +1,101 @@
+name,mobile,email,provider,subscription_type,channels,purchase_date,end_date,is_active,account_number
+Donald Walker,981.960.0133,hoffmanjennifer@example.net,Bell,Basic Cable,Global TV,2025-02-24,2026-07-14,True,ACC-86379402
+Christopher Bernard,1 (811) 615-5940,dudleynicholas@example.net,Cogeco,Premium Cable,"Global TV, Global News",2025-04-08,2026-05-30,True,ACC-49593103
+Dr. Sharon James,852-553-4192 x832,onelson@example.net,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-06-02,2027-01-04,True,ACC-83503056
+Tommy Walter,1 (937) 672-4238,julie69@example.com,Videotron,Basic Cable,Global TV,2024-05-28,2025-09-24,False,ACC-53287101
+Michael Carlson,+1 (569) 784-8018,daniel62@example.com,Cogeco,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-03-05,2025-06-14,False,ACC-04828148
+Phillip Ryan,(209) 570-1543 x039,dennislisa@example.net,Videotron,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-02-02,2026-09-19,True,ACC-22782489
+Joshua Blair,(246) 578-7133,andrew83@example.net,Bell,Global TV Only,Global TV,2024-09-19,2024-10-22,False,ACC-30103105
+Michael Lewis,799 737 6311,rodney70@example.net,Bell,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-01-05,2025-03-24,False,ACC-10651333
+Clifford Ford,778.108.0132,zolson@example.org,Rogers,Global TV Only,Global TV,2024-12-11,2026-06-23,True,ACC-26064746
+Rachel Stanley,823-430-9805 x009,brianromero@example.org,Rogers,Global TV Only,Global TV,2025-04-07,2025-09-19,False,ACC-19136193
+Bradley Sandoval,(154) 353-4624 x751,khowell@example.org,Rogers,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-01-11,2026-07-23,True,ACC-18384251
+Christopher Bass,1-298-084-1241,josephjacobs@example.net,Videotron,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-08-18,2027-07-05,True,ACC-53487401
+Amanda Cook,342 786 8011,davenportbrandi@example.org,Rogers,Global TV Only,Global TV,2025-02-20,2027-02-15,True,ACC-62045053
+Heather Castro,+1 (792) 322-6025,josephcobb@example.org,Rogers,Basic Cable,Global TV,2025-03-27,2026-08-22,True,ACC-60733754
+Courtney Keller,+1 (154) 145-8685,wileyjose@example.net,Shaw,Premium Cable,"Global TV, Global News",2025-07-06,2026-02-15,True,ACC-40196556
+Janice Ray,1-606-088-3561,elizabeth14@example.net,Bell,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-01-31,2026-08-05,True,ACC-46564823
+Megan Orr,1-668-044-3699,rramos@example.org,Shaw,Global TV Only,Global TV,2024-09-17,2026-08-26,True,ACC-87214895
+Cynthia Collins,(420) 037-9176,psnyder@example.org,Videotron,Basic Cable,Global TV,2024-01-22,2025-04-18,False,ACC-01632870
+Barbara Anderson,888-957-9868 x727,karen48@example.com,Shaw,Premium Cable,"Global TV, Global News",2024-12-26,2026-07-08,True,ACC-34714345
+Brenda Hall,431 665 8760,xprice@example.net,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-07-05,2025-12-18,True,ACC-09670546
+Jennifer Adkins,(893) 734-6706 x562,tinaferguson@example.com,Telus,Premium Cable,"Global TV, Global News",2025-07-30,2026-02-06,True,ACC-99016272
+Daniel Murphy,+1 (446) 417-0805,harringtondenise@example.org,Cogeco,Global TV Only,Global TV,2023-12-21,2025-10-06,False,ACC-33092327
+Claudia Lyons,1 (529) 912-4190,tsanders@example.org,Telus,Global TV Only,Global TV,2025-03-18,2026-11-28,True,ACC-19314919
+Jeffrey Wood,(550) 671-6572 x628,umarshall@example.net,Bell,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-06-09,2026-08-19,True,ACC-45314737
+Gabrielle Snyder,1 (927) 354-5494,blackjames@example.org,Telus,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-01-04,2026-10-30,True,ACC-67837770
+Michael Torres,1 (578) 856-8557,john13@example.com,Bell,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-01-22,2025-05-13,False,ACC-18233749
+Diane Garcia,(143) 524-0824,tranheidi@example.org,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-10-28,2026-11-21,True,ACC-71094777
+Dawn Hensley,516.719.0229,mcknightdavid@example.com,Telus,Premium Cable,"Global TV, Global News",2024-07-21,2026-07-04,True,ACC-99938677
+Jessica Carroll,991-334-1232,moorericky@example.net,Videotron,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-06-19,2025-12-31,True,ACC-97403447
+Dennis Moody,(361) 832-4210,brooke94@example.com,Rogers,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-01-06,2025-10-15,False,ACC-17464887
+Stacy Navarro,1-301-399-0490,cstone@example.com,Shaw,Basic Cable,Global TV,2024-09-30,2026-07-01,True,ACC-29671756
+Shannon Rivera,146-807-1545 x168,mgutierrez@example.net,Bell,Global TV Only,Global TV,2024-07-15,2026-02-22,True,ACC-59770348
+Stanley Washington,493-248-0861,murraydavid@example.org,Videotron,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-02-18,2025-07-01,False,ACC-74846773
+Connor Greene,814 658 4044,seanwashington@example.com,Cogeco,Premium Cable,"Global TV, Global News",2024-10-13,2025-12-06,True,ACC-88675339
+Jennifer Flores,966-270-2895 x171,jsmith@example.com,Videotron,Global TV Only,Global TV,2024-08-20,2025-06-05,False,ACC-21745961
+Shannon James,1 (778) 091-3431,hodgesjane@example.org,Videotron,Premium Cable,"Global TV, Global News",2025-07-29,2026-10-19,True,ACC-72400504
+David Jenkins,322 196 9379,stevenking@example.com,Telus,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-08-03,2025-02-14,False,ACC-07482175
+Victor Vaughn,143-671-3695 x944,khill@example.net,Shaw,Basic Cable,Global TV,2025-11-05,2027-05-09,True,ACC-09743953
+Megan Le,510 470 9521,julie23@example.org,Rogers,Premium Cable,"Global TV, Global News",2025-02-22,2026-12-09,True,ACC-85884247
+Seth Brock,812-368-5160 x481,emily49@example.com,Videotron,Basic Cable,Global TV,2025-10-22,2026-11-26,True,ACC-51370985
+Arthur Colon,1-461-200-4711,paulwatson@example.net,Videotron,Premium Cable,"Global TV, Global News",2025-09-14,2027-05-15,True,ACC-86926179
+Amanda Wood,873-515-8506 x431,batesdarlene@example.net,Telus,Premium Cable,"Global TV, Global News",2024-09-08,2026-07-15,True,ACC-00532931
+Laurie Li,(352) 904-2284,guerreroanthony@example.org,Cogeco,Premium Cable,"Global TV, Global News",2025-07-13,2025-11-22,True,ACC-53950240
+Brian Brown,158-917-8390 x847,lutzmelanie@example.com,Cogeco,Global TV Only,Global TV,2024-02-15,2026-01-23,True,ACC-17711592
+Mark Kelley,1 (269) 847-8961,russellbeasley@example.com,Telus,Global TV Only,Global TV,2024-01-02,2025-09-22,False,ACC-57661565
+Christian Leblanc,911.161.5280,elizabeth65@example.net,Shaw,Basic Cable,Global TV,2025-03-15,2026-04-16,True,ACC-60494519
+John Boone,1 (985) 149-3689,lynchdiane@example.net,Videotron,Basic Cable,Global TV,2024-11-19,2026-03-16,True,ACC-40244550
+Matthew Jones,518-366-7525,kimberly99@example.org,Cogeco,Premium Cable,"Global TV, Global News",2024-03-26,2026-03-23,True,ACC-02290147
+Mr. Donald Fischer,456.149.7840,djoyce@example.org,Shaw,Basic Cable,Global TV,2025-03-12,2026-03-28,True,ACC-34324451
+Casey James,(288) 516-0607,barbara96@example.net,Cogeco,Basic Cable,Global TV,2023-11-20,2025-04-10,False,ACC-64160529
+Heidi Kim,436.968.1645,kimberly18@example.net,Cogeco,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-10-16,2025-12-22,True,ACC-18835523
+Christopher Hernandez,627.799.7995,scottharrison@example.net,Telus,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-01-29,2025-06-01,False,ACC-44905814
+Jacob Mitchell,499.867.9807,cassidy82@example.org,Cogeco,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-10-17,2025-12-05,True,ACC-71518203
+Kelly Bishop MD,1-966-590-5151,umitchell@example.net,Telus,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-04-15,2026-11-11,True,ACC-92519254
+Jenna Larson,648.652.8168,coxhenry@example.org,Rogers,Basic Cable,Global TV,2025-10-22,2027-09-17,True,ACC-57332214
+Randy Conley,(105) 929-6222 x927,udiaz@example.org,Rogers,Basic Cable,Global TV,2025-07-24,2027-01-13,True,ACC-79473834
+Stephanie Lee,874-688-6239 x240,angela18@example.org,Telus,Premium Cable,"Global TV, Global News",2025-10-20,2027-07-21,True,ACC-41247826
+Ruth Wilkerson,460-685-3615,florescory@example.net,Telus,Premium Cable,"Global TV, Global News",2024-01-21,2025-06-11,False,ACC-52204727
+Bobby Scott,189 861 4341,robertbauer@example.com,Telus,Premium Cable,"Global TV, Global News",2024-10-07,2024-12-14,False,ACC-11798089
+Jeffrey Mendez,(996) 218-5188,myerstheodore@example.net,Videotron,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-05-09,2026-04-07,True,ACC-65405153
+Patricia Moss,1 (320) 585-2772,baldwinsherry@example.org,Bell,Basic Cable,Global TV,2025-05-03,2025-10-01,False,ACC-43030548
+Kara Johnson,(845) 054-1566,lmorgan@example.com,Telus,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-09-01,2025-12-19,True,ACC-75841616
+Kimberly Morris,854.479.6275,acostarhonda@example.net,Telus,Basic Cable,Global TV,2025-01-28,2026-01-29,True,ACC-64016582
+Lawrence Harrington,321-355-6909,xrush@example.com,Shaw,Global TV Only,Global TV,2025-10-11,2026-06-30,True,ACC-19285654
+Noah Porter,+1 (481) 447-3947,taylorcharles@example.org,Cogeco,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2024-05-15,2026-02-23,True,ACC-71551884
+Michelle Ho,658 313 2370,tanner82@example.net,Bell,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-08-27,2027-01-25,True,ACC-11467866
+William Day,978-528-9226 x801,kevinmartin@example.net,Rogers,Basic Cable,Global TV,2025-07-08,2027-04-11,True,ACC-35841438
+Lisa Davis,199 229 9590,williamsdarlene@example.net,Telus,Global TV Only,Global TV,2024-06-02,2026-03-28,True,ACC-43969078
+Karen Ballard,+1 (447) 102-7677,catherine55@example.net,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-06-13,2024-10-01,False,ACC-56258815
+Jerry Thomas,446-963-2595,tyronerobertson@example.com,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-05-09,2025-08-12,False,ACC-47016873
+Anthony Simpson,148-016-2456 x506,michaelroberts@example.com,Telus,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2024-04-20,2025-08-18,False,ACC-87849912
+Robert Morgan,1 (323) 986-8000,linda87@example.org,Videotron,Basic Cable,Global TV,2025-10-27,2026-04-01,True,ACC-98259526
+Elizabeth Rogers,(187) 947-0551 x694,pbaker@example.net,Telus,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-11-08,2026-12-19,True,ACC-93097289
+Roberto Allen,930.756.2636,vsalas@example.net,Shaw,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-06-03,2026-11-11,True,ACC-02838578
+Julia Patel,(454) 973-3484 x344,wstewart@example.net,Bell,Premium Cable,"Global TV, Global News",2024-08-16,2026-01-23,True,ACC-44198665
+Donna Roberts,557.473.3848,danielyang@example.org,Cogeco,Global TV Only,Global TV,2025-10-12,2027-09-20,True,ACC-30833016
+Michael Taylor,(926) 773-4540 x193,gentrygregory@example.org,Rogers,Global TV Only,Global TV,2024-07-13,2025-08-19,False,ACC-06724004
+William Mitchell,(387) 287-4315 x274,doylekrystal@example.net,Rogers,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-01-03,2026-10-18,True,ACC-32966851
+William Woods,(104) 637-4549,desiree30@example.net,Shaw,Basic Cable,Global TV,2024-09-03,2026-05-20,True,ACC-17426841
+Holly Walker,472 795 6878,erinlarson@example.org,Bell,Premium Cable,"Global TV, Global News",2025-02-23,2025-04-29,False,ACC-87851910
+Christina Herrera,858 713 9718,chavezwilliam@example.com,Videotron,Global TV Only,Global TV,2025-07-12,2027-02-21,True,ACC-90874064
+Laura Williams,1 (318) 017-0462,ybrooks@example.com,Videotron,Global TV Only,Global TV,2025-07-03,2027-06-02,True,ACC-66182512
+Cameron Irwin,804-786-8633,eric31@example.org,Shaw,Basic Cable,Global TV,2025-11-09,2027-08-19,True,ACC-69033119
+Michele Williams,467-383-0284,barbara53@example.com,Shaw,Basic Cable,Global TV,2023-12-09,2024-03-16,False,ACC-28364408
+Susan Garrett,+1 (387) 056-8566,nicholas87@example.org,Shaw,Basic Cable,Global TV,2025-10-08,2026-01-25,True,ACC-34270866
+David Harris,175.183.0469,lopezkathleen@example.net,Bell,Global TV Only,Global TV,2024-12-26,2026-06-19,True,ACC-83735403
+Autumn Key,539-363-8546 x785,michael77@example.org,Rogers,Global TV Only,Global TV,2025-09-30,2027-02-05,True,ACC-75355609
+Alexis Tran,+1 (942) 353-6937,jonathan77@example.com,Rogers,Basic Cable,Global TV,2025-08-07,2026-12-26,True,ACC-25228728
+Kelly Combs,900.623.1203,nbrooks@example.net,Cogeco,Basic Cable,Global TV,2025-11-07,2027-01-12,True,ACC-97700886
+Denise Madden,986-211-8233,lisa46@example.org,Videotron,Global TV Only,Global TV,2023-11-23,2025-07-06,False,ACC-56793341
+Olivia Davis,+1 (668) 700-2176,jacobsonsamantha@example.org,Rogers,Global + Specialty Channels,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV",2025-03-06,2026-05-02,True,ACC-39740148
+Timothy Edwards,(792) 614-2939,patrick21@example.net,Videotron,Premium Cable,"Global TV, Global News",2024-12-30,2026-07-07,True,ACC-50163159
+Jennifer Ayala,747-735-8662,bartonkenneth@example.org,Rogers,Ultimate Package,"Global TV, Global News, Showcase, HISTORY, Food Network, HGTV, W Network, Slice, Lifetime, National Geographic",2025-05-30,2026-08-03,True,ACC-11426265
+Tommy Wallace,1-712-126-7888,johnsonmichael@example.org,Shaw,Global TV Only,Global TV,2024-08-04,2025-08-24,False,ACC-99560466
+Kristin Haney,(898) 262-2444,bryanhamilton@example.com,Rogers,Premium Cable,"Global TV, Global News",2025-06-06,2027-05-13,True,ACC-47154379
+Chad Smith,+1 (559) 657-5692,carrie37@example.com,Videotron,Global TV Only,Global TV,2025-02-07,2026-09-03,True,ACC-26547935
+Jenna Wilson,(298) 280-7374,ichambers@example.net,Bell,Premium Cable,"Global TV, Global News",2024-08-15,2025-01-13,False,ACC-43426617
+James Hunter,+1 (380) 589-1135,hartdeanna@example.net,Bell,Premium Cable,"Global TV, Global News",2025-11-08,2025-12-20,True,ACC-65610143
+Lauren Johnston,256-798-2507 x146,guerrajessica@example.com,Cogeco,Global TV Only,Global TV,2024-11-22,2026-06-20,True,ACC-45738757
+Jodi Jones,310-512-3828,anita73@example.com,Rogers,Premium Cable,"Global TV, Global News",2024-01-25,2026-01-18,True,ACC-22660937
