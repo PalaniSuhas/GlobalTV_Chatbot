@@ -191,7 +191,100 @@ async def handle_view_subscription(action):
         await cl.Message(content="Please verify your account first.").send()
 
 @cl.action_callback("channel_access")
+async def handle_channel_access(action):
+    """Handle channel access questions using subscriber info"""
+    handler = cl.user_session.get("conversation_handler")
+    subscriber_info = handler.context.get('subscriber_info')
+    
+    if subscriber_info:
+        channels = subscriber_info.get('channels', 'No channel information available')
+        subscription_type = subscriber_info.get('subscription_type', 'Unknown')
+        provider = subscriber_info.get('provider', 'Unknown')
+        
+        response = f"""
+**Your Channel Access**
+
+Based on your **{subscription_type}** subscription with **{provider}**, you have access to:
+
+{channels}
+
+**Need help accessing a specific channel?**
+1. Make sure you're signed in to the Global TV app/website
+2. Verify your subscription is active with {provider}
+3. Try signing out and back in
+4. Clear your app cache if on mobile
+
+Would you like help with anything else?
+"""
+        await cl.Message(content=response).send()
+        
+        actions = [
+            cl.Action(name="resolved", value="resolved", label="✅ That Helped!"),
+            cl.Action(name="need_more_help", value="escalate", label="❌ Still Having Issues")
+        ]
+        
+        await cl.Message(
+            content="Did this answer your question?",
+            actions=actions
+        ).send()
+    else:
+        await cl.Message(content="Please verify your account first to view your channel access.").send()
+
 @cl.action_callback("renewal")
+async def handle_renewal(action):
+    """Handle subscription renewal questions"""
+    handler = cl.user_session.get("conversation_handler")
+    subscriber_info = handler.context.get('subscriber_info')
+    
+    if subscriber_info:
+        end_date = subscriber_info.get('end_date', 'Unknown')
+        days_remaining = subscriber_info.get('days_remaining', 0)
+        provider = subscriber_info.get('provider', 'your provider')
+        status = subscriber_info.get('status', 'Unknown')
+        
+        if status == 'Active':
+            response = f"""
+**Subscription Renewal Information**
+
+Your subscription expires on **{end_date}** ({days_remaining} days remaining).
+
+**To renew your subscription:**
+1. Contact **{provider}** directly
+2. Call their customer service number
+3. Ask about Global TV subscription renewal options
+
+**Note:** Global TV subscriptions are managed by your TV service provider ({provider}), not directly by Global TV.
+
+Your subscription should auto-renew if you have automatic billing set up with {provider}.
+"""
+        else:
+            response = f"""
+**Subscription Expired**
+
+Your subscription ended on **{end_date}**.
+
+**To reactivate:**
+1. Contact **{provider}** immediately
+2. Ask to renew your Global TV subscription
+3. Your access will be restored once payment is processed
+
+**Need immediate access?** Call {provider}'s customer service.
+"""
+        
+        await cl.Message(content=response).send()
+        
+        actions = [
+            cl.Action(name="resolved", value="resolved", label="✅ That Helped!"),
+            cl.Action(name="need_more_help", value="escalate", label="❓ More Questions")
+        ]
+        
+        await cl.Message(
+            content="Is there anything else I can help with?",
+            actions=actions
+        ).send()
+    else:
+        await cl.Message(content="Please verify your account first.").send()
+
 @cl.action_callback("show_availability")
 @cl.action_callback("schedule")
 @cl.action_callback("episode_availability")
@@ -326,12 +419,35 @@ async def main(message: cl.Message):
         
         await cl.Message(content=verification_response["message"], actions=actions).send()
         
-    elif current_state == ConversationState.GENERAL_QUERY:
-        # Use knowledge base to answer
-        answer = knowledge_manager.get_answer(user_message)
-        handler.add_to_history("assistant", answer)
+    elif current_state == ConversationState.SUBSCRIPTION_VERIFIED or current_state == ConversationState.GENERAL_QUERY:
+        # Check if this is a subscription-related query that we can answer directly
+        subscriber_info = handler.context.get('subscriber_info')
+        user_message_lower = user_message.lower()
         
-        await cl.Message(content=answer).send()
+        # Subscription-specific queries
+        if subscriber_info and any(keyword in user_message_lower for keyword in [
+            'channel', 'subscription', 'access', 'package', 'provider', 
+            'what do i have', 'my subscription', 'my channels'
+        ]):
+            channels = subscriber_info.get('channels', 'No information available')
+            subscription_type = subscriber_info.get('subscription_type', 'Unknown')
+            provider = subscriber_info.get('provider', 'Unknown')
+            
+            answer = f"""Based on your verified subscription:
+
+**Subscription Type:** {subscription_type}
+**Provider:** {provider}
+**Your Channels:** {channels}
+
+These are the Global TV channels included in your current subscription package."""
+            
+            handler.add_to_history("assistant", answer)
+            await cl.Message(content=answer).send()
+        else:
+            # Use knowledge base for other queries
+            answer = knowledge_manager.get_answer(user_message)
+            handler.add_to_history("assistant", answer)
+            await cl.Message(content=answer).send()
         
         # Ask if issue is resolved
         actions = [

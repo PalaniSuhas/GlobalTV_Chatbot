@@ -2,7 +2,6 @@
 # Whether to enable telemetry (default: true). No personal data is collected.
 enable_telemetry = true
 
-
 # List of environment variables to be provided by each user to use the app.
 user_env = []
 
@@ -17,6 +16,22 @@ allow_origins = ["*"]
 
 # Follow symlink for asset mount (see https://github.com/Chainlit/chainlit/issues/317)
 # follow_symlink = false
+
+# IMPORTANT: Add these watch settings to prevent constant reloading
+[project.watch]
+# Paths to ignore during watch mode
+ignore = [
+    ".chromadb/**",
+    "__pycache__/**",
+    "*.pyc",
+    ".git/**",
+    ".venv/**",
+    "venv/**",
+    ".env",
+    "*.log",
+    "data/**",
+    ".chainlit/.files/**"
+]
 
 [features]
 # Process and display HTML in messages. This can be a security risk (see https://stackoverflow.com/questions/19603097/why-is-it-dangerous-to-render-user-generated-html-or-javascript)
@@ -54,16 +69,16 @@ edit_message = true
 
 [UI]
 # Name of the assistant.
-name = "Assistant"
+name = "Global TV Support"
 
 # Description of the assistant. This is used for HTML tags.
-# description = ""
+description = "24/7 Global TV Customer Support Assistant"
 
 # Large size content are by default collapsed for a cleaner ui
 default_collapse_content = true
 
 # Chain of Thought (CoT) display mode. Can be "hidden", "tool_call" or "full".
-cot = "full"
+cot = "hidden"
 
 # Link to your github repo. This will add a github button in the UI's header.
 # github = ""
@@ -91,6 +106,7 @@ cot = "full"
     default = "dark"
     #layout = "wide"
     #font_family = "Inter, sans-serif"
+
 # Override default MUI light theme. (Check theme.ts)
 [UI.theme.light]
     #background = "#FAFAFA"
