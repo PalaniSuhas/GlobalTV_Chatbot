@@ -1,8 +1,8 @@
 """Core chatbot logic - can be used independently of Chainlit"""
 from typing import Dict, Optional, List
-from src.subscription_manager import SubscriptionManager
-from src.knowledge_manager import KnowledgeManager
-from src.conversation_handler import ConversationHandler, ConversationState
+from .subscription_manager import SubscriptionManager
+from .knowledge_manager import SmartKnowledgeManager
+from .conversation_handler import ConversationHandler, ConversationState
 
 
 class GlobalTVChatbot:
@@ -14,7 +14,7 @@ class GlobalTVChatbot:
     def __init__(self):
         """Initialize chatbot with managers"""
         self.subscription_manager = SubscriptionManager()
-        self.knowledge_manager = KnowledgeManager()
+        self.knowledge_manager = SmartKnowledgeManager()
         self.conversation_handler = ConversationHandler()
         self.session_data = {}
     

@@ -1,5 +1,8 @@
+.chainlit/
 __pycache__/
-.env
-translations/
+frontend/node_modules/
+
+
 *.docx
-data/tickets/support_tickets.csv
+
+*.next
