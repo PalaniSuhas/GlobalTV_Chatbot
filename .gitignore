@@ -2,3 +2,4 @@ __pycache__/
 .env
 translations/
 *.docx
+data/tickets/support_tickets.csv
