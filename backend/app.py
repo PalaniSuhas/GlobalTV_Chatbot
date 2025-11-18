@@ -1,21 +1,58 @@
-"""Flask Backend for Global TV Chatbot"""
-import sys, os
+"""FastAPI Backend for Global TV Chatbot"""
+import sys
+import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional, List, Dict
 from dotenv import load_dotenv
-import os
 from src.chatbot import GlobalTVChatbot
+from src.ticket_manager import TicketManager
 
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for Next.js frontend
+app = FastAPI(
+    title="Global TV Chatbot API",
+    description="AI-powered customer support for Global TV",
+    version="1.0.0"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Store chatbot instances per session
-chatbot_sessions = {}
+chatbot_sessions: Dict[str, GlobalTVChatbot] = {}
+
+
+# Pydantic Models
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str = "default"
+
+
+class ChatResponse(BaseModel):
+    message: str
+    buttons: List[Dict[str, str]] = []
+    state: str
+
+
+class ResetRequest(BaseModel):
+    session_id: str = "default"
+
+
+class SubscriptionRequest(BaseModel):
+    name: str
+    mobile: str
+    session_id: str = "default"
 
 
 def get_or_create_chatbot(session_id: str) -> GlobalTVChatbot:
@@ -27,123 +64,138 @@ def get_or_create_chatbot(session_id: str) -> GlobalTVChatbot:
     return chatbot_sessions[session_id]
 
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Global TV Chatbot API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
     """Handle chat messages"""
     try:
-        data = request.json
-        message = data.get('message', '')
-        session_id = data.get('session_id', 'default')
-        
-        if not message:
-            return jsonify({'error': 'Message is required'}), 400
+        if not request.message:
+            raise HTTPException(status_code=400, detail="Message is required")
         
         # Get or create chatbot for this session
-        chatbot = get_or_create_chatbot(session_id)
+        chatbot = get_or_create_chatbot(request.session_id)
         
         # Process message
-        response = chatbot.process_message(message)
+        response = chatbot.process_message(request.message)
         
-        return jsonify({
-            'message': response['message'],
-            'buttons': response.get('buttons', []),
-            'state': chatbot.get_current_state().value
-        })
+        return ChatResponse(
+            message=response['message'],
+            buttons=response.get('buttons', []),
+            state=chatbot.get_current_state().value
+        )
     
     except Exception as e:
         print(f"Error in chat endpoint: {e}")
-        return jsonify({
-            'message': 'Sorry, I encountered an error. Please try again.',
-            'buttons': []
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail="Sorry, I encountered an error. Please try again."
+        )
 
 
-@app.route('/api/reset', methods=['POST'])
-def reset():
+@app.post("/api/reset")
+async def reset(request: ResetRequest):
     """Reset conversation"""
     try:
-        data = request.json
-        session_id = data.get('session_id', 'default')
-        
-        if session_id in chatbot_sessions:
-            chatbot_sessions[session_id].reset_conversation()
-            welcome = chatbot_sessions[session_id].start_conversation()
-            return jsonify({
+        if request.session_id in chatbot_sessions:
+            chatbot_sessions[request.session_id].reset_conversation()
+            welcome = chatbot_sessions[request.session_id].start_conversation()
+            return {
                 'message': welcome['message'],
                 'buttons': welcome.get('buttons', [])
-            })
+            }
         
-        return jsonify({
-            'message': 'Session not found',
-            'buttons': []
-        }), 404
+        raise HTTPException(status_code=404, detail="Session not found")
     
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error in reset endpoint: {e}")
-        return jsonify({
-            'message': 'Error resetting conversation',
-            'buttons': []
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail="Error resetting conversation"
+        )
 
 
-@app.route('/api/subscription', methods=['POST'])
-def get_subscription():
+@app.post("/api/subscription")
+async def get_subscription(request: SubscriptionRequest):
     """Get subscription details"""
     try:
-        data = request.json
-        name = data.get('name', '')
-        mobile = data.get('mobile', '')
-        session_id = data.get('session_id', 'default')
+        if not request.name or not request.mobile:
+            raise HTTPException(
+                status_code=400,
+                detail="Name and mobile are required"
+            )
         
-        if not name or not mobile:
-            return jsonify({'error': 'Name and mobile are required'}), 400
-        
-        chatbot = get_or_create_chatbot(session_id)
-        subscriber_info = chatbot.get_subscription_details(name, mobile)
+        chatbot = get_or_create_chatbot(request.session_id)
+        subscriber_info = chatbot.get_subscription_details(request.name, request.mobile)
         
         if subscriber_info:
-            return jsonify({
+            return {
                 'success': True,
                 'subscriber_info': subscriber_info
-            })
+            }
         else:
-            return jsonify({
+            return {
                 'success': False,
                 'message': 'Subscriber not found'
-            })
+            }
     
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error in subscription endpoint: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Error retrieving subscription'
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail="Error retrieving subscription"
+        )
 
 
-@app.route('/api/health', methods=['GET'])
-def health():
+@app.get("/api/health")
+async def health():
     """Health check endpoint"""
-    return jsonify({
+    return {
         'status': 'healthy',
         'active_sessions': len(chatbot_sessions)
-    })
+    }
 
 
-@app.route('/api/tickets/stats', methods=['GET'])
-def ticket_stats():
+@app.get("/api/tickets/stats")
+async def ticket_stats():
     """Get ticket statistics"""
     try:
-        from src.ticket_manager import TicketManager
         ticket_manager = TicketManager()
         stats = ticket_manager.get_ticket_stats()
-        return jsonify(stats)
+        return stats
     except Exception as e:
         print(f"Error getting ticket stats: {e}")
-        return jsonify({'error': 'Error retrieving ticket stats'}), 500
+        raise HTTPException(
+            status_code=500,
+            detail="Error retrieving ticket stats"
+        )
 
 
 if __name__ == '__main__':
+    import uvicorn
+    print("=" * 60)
     print("🚀 Global TV Chatbot Backend Starting...")
     print("📡 Server running on http://localhost:5001")
+    print("📚 API Documentation: http://localhost:5001/docs")
     print("🔗 Connect your Next.js frontend to this server")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    print("=" * 60)
+    
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=5001,
+        reload=True,
+        log_level="info"
+    )

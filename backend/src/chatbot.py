@@ -1,14 +1,15 @@
-"""Core chatbot logic - Clean responses, auto-ticketing, no repetition"""
+"""Core chatbot logic - IMPROVED with varied responses"""
 from typing import Dict, Optional, List
 from .subscription_manager import SubscriptionManager
 from .knowledge_manager import SmartKnowledgeManager
 from .conversation_handler import ConversationHandler, ConversationState
 from .ticket_manager import TicketManager
+import random
 
 
 class GlobalTVChatbot:
     """
-    Core chatbot class with clean responses and smart escalation
+    Core chatbot class with varied responses and smart escalation
     """
     
     def __init__(self):
@@ -29,8 +30,11 @@ class GlobalTVChatbot:
         
         # Track resolution attempts
         self.resolution_attempts = 0
-        self.max_attempts = 2  # Auto-escalate after 2 failed attempts
+        self.max_attempts = 2
         self.ticket_created = False
+        
+        # Track last response type to avoid repetition
+        self.last_response_type = None
     
     def start_conversation(self) -> Dict:
         """Start a new conversation"""
@@ -43,6 +47,7 @@ class GlobalTVChatbot:
         }
         self.resolution_attempts = 0
         self.ticket_created = False
+        self.last_response_type = None
         return self.conversation_handler.get_welcome_message()
     
     def _extract_info_from_message(self, message: str):
@@ -53,7 +58,6 @@ class GlobalTVChatbot:
         devices = ['iphone', 'android', 'samsung', 'tv', 'ipad', 'tablet', 'computer', 'laptop', 'mac', 'windows', 'ios', 'tizen']
         if any(device in message_lower for device in devices):
             if not self.collected_info['device_info']:
-                # Extract just the relevant part
                 for device in devices:
                     if device in message_lower:
                         start = message_lower.find(device)
@@ -218,14 +222,13 @@ class GlobalTVChatbot:
         return self._handle_general_query(query)
     
     def _handle_technical_support(self, query: str) -> Dict:
-        """Handle technical support - Clean responses only"""
+        """Handle technical support - VARIED responses"""
         query_lower = query.lower()
         
         # Check if user said issue not resolved
         if any(word in query_lower for word in ['still', 'not', "didn't", 'no', 'same', 'persist']):
             self.resolution_attempts += 1
             
-            # Auto-escalate after 2 attempts
             if self.resolution_attempts >= self.max_attempts and not self.ticket_created:
                 return self._auto_escalate()
         
@@ -242,9 +245,24 @@ class GlobalTVChatbot:
         has_device = self.collected_info['device_info'] is not None
         has_show = self.collected_info['show_details'] is not None
         
+        # VARIED RESPONSES - avoid repeating same steps
         if is_ad_issue:
-            # Ad issue - give solution immediately
-            answer = """**Troubleshooting Steps for Ad Freezing/Crashing:**
+            if self.last_response_type == 'ad_issue':
+                # Second time - give alternative solution
+                answer = """Let's try a different approach:
+
+**Alternative Fix for Ad Issues:**
+
+1. **Network Reset**: Restart your router/modem, wait 30 seconds, then power back on
+2. **Update App**: Check for any pending app updates in your app store
+3. **Change DNS**: Try switching to Google DNS (8.8.8.8) in your network settings
+4. **Clear System Cache**: On most devices, go to Settings → Apps → Clear Cache
+5. **Contact Your ISP**: Sometimes ad delivery issues are network-related
+
+Has this helped resolve the issue?"""
+            else:
+                # First time - give primary solution
+                answer = """**Troubleshooting Steps for Ad Freezing/Crashing:**
 
 1. Clear app cache/data → Remove app → Restart device → Reinstall app
 2. Turn off ad blockers and pop-up blockers
@@ -254,10 +272,29 @@ class GlobalTVChatbot:
 6. If issue persists: Hold Pause button for 5 seconds (hard power down), then reinstall app
 
 Please try these steps and let me know if the issue is resolved."""
+            self.last_response_type = 'ad_issue'
         
         elif has_device or has_show:
-            # We have some info - give general solution
-            answer = """**Troubleshooting Steps:**
+            if self.last_response_type == 'general_tech':
+                # Second time - personalized response
+                device_msg = f" on your {self.collected_info['device_info']}" if has_device else ""
+                show_msg = f" with {self.collected_info['show_details']}" if has_show else ""
+                
+                answer = f"""I understand you're still having issues{device_msg}{show_msg}. Let's try these additional steps:
+
+**Advanced Troubleshooting:**
+
+1. **Force Stop the App**: Go to Settings → Apps → Global TV → Force Stop
+2. **Check for System Updates**: Update your device's operating system
+3. **Test Different Content**: Try playing a different show to isolate the issue
+4. **Lower Video Quality**: In app settings, try reducing streaming quality temporarily
+5. **Check Storage Space**: Ensure you have at least 1GB free space
+6. **Reinstall from Scratch**: Uninstall completely, restart device, reinstall fresh
+
+Still having trouble after trying these?"""
+            else:
+                # First time - standard response
+                answer = """**Troubleshooting Steps:**
 
 1. Clear browser cache and cookies (or clear app data on mobile)
 2. Try a different browser (Chrome, Firefox, Safari)
@@ -267,15 +304,17 @@ Please try these steps and let me know if the issue is resolved."""
 6. Sign out and sign back in to your account
 
 Try these steps and let me know if it helps."""
+            self.last_response_type = 'general_tech'
         
         else:
-            # Need basic info
-            answer = """**To help you better, I need:**
+            # Need basic info - conversational approach
+            answer = """To help you effectively, I need a bit more information:
 
-• What device are you using? (e.g., iPhone 14, Samsung Smart TV)
-• Which show/episode is having issues?
+• **What device are you using?** (iPhone, Android, Smart TV, etc.)
+• **Which show or channel is having issues?**
 
-Once I have this info, I can provide specific troubleshooting steps."""
+This will help me provide targeted troubleshooting steps specific to your setup."""
+            self.last_response_type = 'info_request'
         
         self.conversation_handler.add_to_history("assistant", answer)
         
@@ -306,7 +345,6 @@ Once I have this info, I can provide specific troubleshooting steps."""
         
         # Check if answer is generic "contact support" response
         if "webmaster@globaltv.com" in answer and "knowledge base" in answer.lower():
-            # Knowledge base doesn't have answer - escalate immediately
             return self._auto_escalate()
         
         self.conversation_handler.add_to_history("assistant", answer)
@@ -323,7 +361,6 @@ Once I have this info, I can provide specific troubleshooting steps."""
     def _auto_escalate(self) -> Dict:
         """Automatically escalate and create ticket"""
         if not self.ticket_created:
-            # Create ticket
             subscriber_info = self.conversation_handler.context.get('subscriber_info')
             
             # Build issue summary
@@ -351,13 +388,13 @@ Once I have this info, I can provide specific troubleshooting steps."""
             
             self.ticket_created = True
             
-            message = f"""I've created a support ticket for you.
+            message = f"""I've escalated your issue to our technical team.
 
 **Ticket ID:** {ticket_id}
 
-Our technical team will review your case and contact you within 24 hours.
+Our specialists will review your case and contact you within 24 hours.
 
-**Contact Options:**
+**Need immediate assistance?**
 📞 **Phone:** 1-800-GLOBAL-TV (1-800-456-2258)
 📧 **Email:** webmaster@globaltv.com
 
@@ -366,8 +403,7 @@ Please reference your ticket ID when contacting us.
 Is there anything else I can help you with?"""
         
         else:
-            # Ticket already created
-            message = """A support ticket has already been created for your issue.
+            message = """Your support ticket is already in progress.
 
 Our technical team will contact you soon.
 
@@ -425,6 +461,7 @@ Is there anything else I can help you with?"""
         }
         self.resolution_attempts = 0
         self.ticket_created = False
+        self.last_response_type = None
     
     def get_subscription_details(self, name: str, mobile: str) -> Optional[Dict]:
         """Get subscription details for a user"""
@@ -444,65 +481,3 @@ Is there anything else I can help you with?"""
     def set_state(self, state: ConversationState):
         """Set conversation state manually"""
         self.conversation_handler.state = state
-
-
-# CLI interface for testing
-def main():
-    """CLI interface for testing the chatbot"""
-    print("=" * 60)
-    print("Global TV Support Chatbot - CLEAN VERSION")
-    print("=" * 60)
-    print()
-    
-    chatbot = GlobalTVChatbot()
-    
-    # Start conversation
-    welcome = chatbot.start_conversation()
-    print(f"Bot: {welcome['message']}\n")
-    
-    if welcome.get('buttons'):
-        print("Options:")
-        for i, btn in enumerate(welcome['buttons'], 1):
-            print(f"  {i}. {btn['label']}")
-        print()
-    
-    # Main conversation loop
-    while True:
-        try:
-            user_input = input("You: ").strip()
-            
-            if not user_input:
-                continue
-            
-            if user_input.lower() in ['quit', 'exit', 'bye']:
-                print("\nBot: Thank you for contacting Global TV support. Goodbye!")
-                break
-            
-            if user_input.lower() == 'reset':
-                chatbot.reset_conversation()
-                welcome = chatbot.start_conversation()
-                print(f"\nBot: {welcome['message']}\n")
-                continue
-            
-            # Process message
-            response = chatbot.process_message(user_input)
-            
-            print(f"\nBot: {response['message']}\n")
-            
-            # Show buttons if available
-            if response.get('buttons'):
-                print("Quick Options:")
-                for i, btn in enumerate(response['buttons'], 1):
-                    print(f"  {i}. {btn['label']}")
-                print()
-            
-        except KeyboardInterrupt:
-            print("\n\nBot: Conversation interrupted. Goodbye!")
-            break
-        except Exception as e:
-            print(f"\nError: {e}")
-            print("Please try again or type 'reset' to restart.\n")
-
-
-if __name__ == "__main__":
-    main()
